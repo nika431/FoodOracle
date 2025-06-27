@@ -2,6 +2,7 @@
 using FoodOracle.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FoodOracle.API.Controllers
 {
@@ -17,11 +18,37 @@ namespace FoodOracle.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FoodItem>>> GetFood()
+        public async Task<ActionResult<IEnumerable<FoodItem>>> GetFood(
+            [FromQuery] string? searchQuery,
+            [FromQuery] string? sortBy
+        )
         {
-            var items = await _context.FoodItems.ToListAsync();
+            var querry = _context.FoodItems.AsQueryable();
+
+            if(!string.IsNullOrEmpty(searchQuery))
+            {
+                querry = querry.Where(f => f.Name.ToLower().Contains(searchQuery.ToLower()));
+            }
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "date":
+                        querry = querry.OrderBy(item => item.ExpiryDate);
+                        break;
+                    case "name":
+                        querry = querry.OrderBy(item => item.Name);
+                        break;
+                }
+            }
+            else
+            {
+                querry = querry.OrderBy(item => item.ExpiryDate);
+            }
+            var items = await querry.ToListAsync();
             return Ok(items);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<FoodItem>> GetFoodById(int id)
@@ -96,5 +123,6 @@ namespace FoodOracle.API.Controllers
 
             return Ok(item);
         }
+
     }
 }
