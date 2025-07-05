@@ -1,5 +1,6 @@
 using FoodOracle.API.Data;
 using FoodOracle.API.Models;
+using FoodOracle.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-
+builder.Services.AddScoped<FoodService>();
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.MapControllers();

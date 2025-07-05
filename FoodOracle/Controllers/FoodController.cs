@@ -1,8 +1,6 @@
-﻿using FoodOracle.API.Data;
-using FoodOracle.API.Models;
+﻿using FoodOracle.API.Models;
+using FoodOracle.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FoodOracle.API.Controllers
 {
@@ -10,57 +8,37 @@ namespace FoodOracle.API.Controllers
     [Route("api/[controller]")]
     public class FoodController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly FoodService _foodService;
 
-        public FoodController(ApplicationDbContext context)
+        public FoodController(FoodService foodService)
         {
-            _context = context;
+            _foodService = foodService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FoodItem>>> GetFood(
             [FromQuery] string? searchQuery,
-            [FromQuery] string? sortBy
-        )
+            [FromQuery] string? sortBy,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
         {
-            var querry = _context.FoodItems.AsQueryable();
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 5 : pageSize;
+            pageSize = pageSize > 100 ? 100 : pageSize;
 
-            if(!string.IsNullOrEmpty(searchQuery))
-            {
-                querry = querry.Where(f => f.Name.ToLower().Contains(searchQuery.ToLower()));
-            }
-            if (!string.IsNullOrEmpty(sortBy))
-            {
-                switch (sortBy.ToLower())
-                {
-                    case "date":
-                        querry = querry.OrderBy(item => item.ExpiryDate);
-                        break;
-                    case "name":
-                        querry = querry.OrderBy(item => item.Name);
-                        break;
-                }
-            }
-            else
-            {
-                querry = querry.OrderBy(item => item.ExpiryDate);
-            }
-            var items = await querry.ToListAsync();
-            return Ok(items);
+            var foods = await _foodService.GetFoodAsync(searchQuery, sortBy, pageNumber, pageSize);
+            return Ok(foods);
         }
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<FoodItem>> GetFoodById(int id)
         {
-            var item = await _context.FoodItems.FindAsync(id);
+            var item = await _foodService.GetFoodByIdAsync(id);
 
-            if (item == null)
-            {
-                return NotFound();
-            }
+            if (item == null) { return NotFound(); } 
 
-            return Ok(item);
+            return Ok(item); 
         }
 
         [HttpPost]
@@ -71,23 +49,19 @@ namespace FoodOracle.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            _context.FoodItems.Add(item);
-            await _context.SaveChangesAsync();
+            var createdItem = await _foodService.AddFoodAsync(item);
 
-            return CreatedAtAction(nameof(GetFoodById), new { id = item.Id }, item);
+            return CreatedAtAction(nameof(GetFoodById), new { id = createdItem.Id }, createdItem);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFood(int id)
         {
-            var item = await _context.FoodItems.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+            var item = await _foodService.GetFoodByIdAsync(id);
 
-            _context.FoodItems.Remove(item);
-            await _context.SaveChangesAsync();
+            if (item == null) { return NotFound(); }
+
+            await _foodService.DeleteFoodAsync(item);
 
             return NoContent();
         }
@@ -100,7 +74,7 @@ namespace FoodOracle.API.Controllers
                 return BadRequest("ID mismatch");
             }
 
-            var item = await _context.FoodItems.FindAsync(id);
+            var item = await _foodService.GetFoodByIdAsync(id);
             if (item == null)
             {
                 return NotFound();
@@ -110,15 +84,12 @@ namespace FoodOracle.API.Controllers
             item.ExpiryDate = updatedItem.ExpiryDate;
             item.Quantity = updatedItem.Quantity;
 
-            _context.Entry(item).State = EntityState.Modified;
+            _foodService.UpdateFood(item);
 
-            try
+            var saved = await _foodService.SaveChangesAsync();
+            if (!saved)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
+                return StatusCode(409, "Concurrency conflict detected");
             }
 
             return Ok(item);
