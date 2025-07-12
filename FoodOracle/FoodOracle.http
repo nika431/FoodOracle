@@ -1,0 +1,6 @@
+@FoodOracle_HostAddress = http://localhost:5100
+
+GET {{FoodOracle_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
