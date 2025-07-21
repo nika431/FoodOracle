@@ -2,6 +2,8 @@
 using FoodOracle.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FoodOracle.Dtos;
+using FoodOracle.Models;
 
 namespace FoodOracle.Services
 {
@@ -14,7 +16,7 @@ namespace FoodOracle.Services
             _context = context;
         }
 
-        public async Task<List<FoodItem>> GetFoodAsync(string? searchQuery, string? sortBy, int pageNumber = 1, int pageSize = 5)
+        public async Task<PagedResult<FoodItem>> GetFoodAsync(string? searchQuery, string? sortBy, int pageNumber = 1, int pageSize = 5)
         {
             var query = _context.FoodItems.AsQueryable();
 
@@ -25,19 +27,26 @@ namespace FoodOracle.Services
 
             if (!string.IsNullOrEmpty(sortBy))
             {
-                switch (sortBy.ToLower())
+                query = sortBy.ToLower() switch
                 {
-                    case "date":
-                        query = query.OrderBy(item => item.ExpiryDate);
-                        break;
-                    case "name":
-                        query = query.OrderBy(item => item.Name);
-                        break;
-                }
+                    "date" => query.OrderBy(item => item.ExpiryDate),
+                    "name" => query.OrderBy(item => item.Name),
+                    _ => query
+                };
             }
-            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
-            return await query.ToListAsync();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<FoodItem>
+            {
+                Items = items,
+                TotalCount = totalCount
+            };
         }
         public async Task<FoodItem?> GetFoodByIdAsync(int id)
         {

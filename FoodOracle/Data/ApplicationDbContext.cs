@@ -1,4 +1,5 @@
 ﻿using FoodOracle.API.Models;
+using FoodOracle.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
@@ -10,5 +11,6 @@ namespace FoodOracle.API.Data
 
         public DbSet<FoodItem> FoodItems { get; set; }
 
+        public DbSet<User> Users { get; set; }
     }
 }
