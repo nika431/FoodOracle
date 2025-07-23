@@ -92,5 +92,10 @@ namespace FoodOracle.Services
 
             return CreateToken(user);
         }
+        public async Task<bool> DoesUserExist(string username)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return user != null;
+        }
     }
 }

@@ -34,15 +34,25 @@ namespace FoodOracle.API.Controllers
         {
             try
             {
+                // Check if user exists (your service logic might already do this)
+                var userExists = await _userService.DoesUserExist(dto.Username);
+
+                if (!userExists)
+                {
+                    // Username not found = force 400 Bad Request
+                    return BadRequest(new { error = "User not registered." });
+                }
+
                 var token = await _userService.Login(dto.Username, dto.Password);
+
                 return Ok(new { token });
             }
             catch (InvalidOperationException ex)
             {
+                // Wrong password, etc.
                 return Unauthorized(new { error = ex.Message });
             }
         }
-
 
     }
 }
