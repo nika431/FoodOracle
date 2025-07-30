@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+using FoodOracle.Controllers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -37,7 +38,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddScoped<FoodService>();
-builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<UserSerivce>();
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.MapControllers();

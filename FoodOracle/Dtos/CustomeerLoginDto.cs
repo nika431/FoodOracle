@@ -2,7 +2,7 @@
 
 namespace FoodOracle.Dtos
 {
-    public class UserLoginDto
+    public class CustomeerLoginDto
     {
         [Required]
         public string Username { get; set; } = string.Empty;

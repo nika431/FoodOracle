@@ -10,14 +10,14 @@ namespace FoodOracle.API.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly CustomerService _userService;
 
-        public AuthController(UserService userService)
+        public AuthController(CustomerService userService)
         {
             _userService = userService;
         }
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] CustomerRegisterDto dto)
         {
             try
             {
@@ -30,16 +30,14 @@ namespace FoodOracle.API.Controllers
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
+        public async Task<IActionResult> Login([FromBody] CustomeerLoginDto dto)
         {
             try
             {
-                // Check if user exists (your service logic might already do this)
                 var userExists = await _userService.DoesUserExist(dto.Username);
 
                 if (!userExists)
                 {
-                    // Username not found = force 400 Bad Request
                     return BadRequest(new { error = "User not registered." });
                 }
 
@@ -49,7 +47,6 @@ namespace FoodOracle.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                // Wrong password, etc.
                 return Unauthorized(new { error = ex.Message });
             }
         }

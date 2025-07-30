@@ -1,11 +1,12 @@
 ﻿using FoodOracle.API.Models;
+using FoodOracle.Models;
 using FoodOracle.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOracle.API.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FoodController : ControllerBase
@@ -20,7 +21,7 @@ namespace FoodOracle.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FoodItem>>> GetFood(
               [FromQuery] string? searchQuery, 
-            [FromQuery] string? sortBy,
+              [FromQuery] string? sortBy,
               [FromQuery] int pageNumber = 1,
               [FromQuery] int pageSize = 5)
         {
@@ -31,7 +32,6 @@ namespace FoodOracle.API.Controllers
             var foods = await _foodService.GetFoodAsync(searchQuery, sortBy, pageNumber, pageSize);
             return Ok(foods);
         }
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<FoodItem>> GetFoodById(int id)

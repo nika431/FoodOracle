@@ -1,4 +1,6 @@
-﻿namespace FoodOracle.API.Models
+﻿using FoodOracle.Models;
+
+namespace FoodOracle.API.Models
 {
     public class FoodItem
     {

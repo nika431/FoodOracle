@@ -9,11 +9,11 @@ using System.Text;
 
 namespace FoodOracle.Services
 {
-    public class UserService
+    public class CustomerService
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
-        public UserService(ApplicationDbContext context, IConfiguration config)
+        public CustomerService(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
@@ -27,7 +27,7 @@ namespace FoodOracle.Services
             }
 
             using var hmac = new HMACSHA512();
-            var user = new User
+            var user = new Customer
             {
                 Username = username,
                 PasswordSalt = hmac.Key,
@@ -39,7 +39,7 @@ namespace FoodOracle.Services
             return true;
         }
 
-        public string GenerateJwtToken(User user)
+        public string GenerateJwtToken(Customer user)
         {
             var claims = new[]
             {
@@ -58,7 +58,7 @@ namespace FoodOracle.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        private string CreateToken(User user)
+        private string CreateToken(Customer user)
         {
             var claims = new[]
             {

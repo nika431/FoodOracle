@@ -11,6 +11,6 @@ namespace FoodOracle.API.Data
 
         public DbSet<FoodItem> FoodItems { get; set; }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<Customer> Users { get; set; }
     }
 }
