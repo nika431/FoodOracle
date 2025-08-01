@@ -16,7 +16,6 @@ namespace FoodOracle.Models
 
         [Required]
         public byte[] PasswordSalt { get; set; }
-        public List<FoodItem> FoodItems { get; set; } = new();
     }
 }
 

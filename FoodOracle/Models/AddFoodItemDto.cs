@@ -1,12 +1,13 @@
-﻿using FoodOracle.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using FoodOracle.Models;
 
-namespace FoodOracle.API.Models
+namespace FoodOracle.Models
 {
-    public class FoodItem
+    public class AddFoodItemDto
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public DateTime ExpiryDate { get; set; }
         public int Quantity { get; set; }
     }
+
 }

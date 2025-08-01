@@ -20,7 +20,7 @@ namespace FoodOracle.API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FoodItem>>> GetFood(
-              [FromQuery] string? searchQuery, 
+              [FromQuery] string? searchQuery,
               [FromQuery] string? sortBy,
               [FromQuery] int pageNumber = 1,
               [FromQuery] int pageSize = 5)
@@ -38,9 +38,9 @@ namespace FoodOracle.API.Controllers
         {
             var item = await _foodService.GetFoodByIdAsync(id);
 
-            if (item == null) { return NotFound(); } 
+            if (item == null) { return NotFound(); }
 
-            return Ok(item); 
+            return Ok(item);
         }
 
         [HttpPost]
