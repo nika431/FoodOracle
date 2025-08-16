@@ -3,7 +3,7 @@ using FoodOracle.Models;
 
 namespace FoodOracle.Models
 {
-    public class AddFoodItemDto
+    public class FoodItemDto
     {
         public string Name { get; set; }
         public DateTime ExpiryDate { get; set; }

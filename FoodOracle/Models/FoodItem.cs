@@ -1,5 +1,5 @@
-﻿using FoodOracle.Models;
-
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using FoodOracle.Models;
 namespace FoodOracle.API.Models
 {
     public class FoodItem
@@ -8,5 +8,7 @@ namespace FoodOracle.API.Models
         public string Name { get; set; }
         public DateTime ExpiryDate { get; set; }
         public int Quantity { get; set; }
+        public int CustomerId { get; set; }       
+        public Customer Customer { get; set; }
     }
 }

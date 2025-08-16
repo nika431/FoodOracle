@@ -1,8 +1,10 @@
-﻿using FoodOracle.Dtos;
+﻿using FoodOracle.API.Models;
+using FoodOracle.Dtos;
 using FoodOracle.Models;
 using FoodOracle.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace FoodOracle.API.Controllers
 {
@@ -30,26 +32,30 @@ namespace FoodOracle.API.Controllers
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] CustomeerLoginDto dto)
+        public async Task<IActionResult> Login(CustomeerLoginDto dto)
         {
             try
             {
                 var userExists = await _userService.DoesUserExist(dto.Username);
-
                 if (!userExists)
                 {
                     return BadRequest(new { error = "User not registered." });
                 }
 
-                var token = await _userService.Login(dto.Username, dto.Password);
+                var result = await _userService.Login(dto.Username, dto.Password);
+                if (result == null) return Unauthorized();
 
-                return Ok(new { token });
+                return Ok(new
+                {
+                    token = result.Token,
+                    customerId = result.UserId,
+                    username = dto.Username
+                });
             }
             catch (InvalidOperationException ex)
             {
-                return Unauthorized(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
         }
-
     }
 }

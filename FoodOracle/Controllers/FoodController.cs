@@ -3,6 +3,7 @@ using FoodOracle.Models;
 using FoodOracle.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FoodOracle.API.Controllers
 {
@@ -25,11 +26,17 @@ namespace FoodOracle.API.Controllers
               [FromQuery] int pageNumber = 1,
               [FromQuery] int pageSize = 5)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             pageSize = pageSize < 1 ? 5 : pageSize;
             pageSize = pageSize > 100 ? 100 : pageSize;
 
-            var foods = await _foodService.GetFoodAsync(searchQuery, sortBy, pageNumber, pageSize);
+            var foods = await _foodService.GetFoodAsync(userId ,searchQuery, sortBy, pageNumber, pageSize);
             return Ok(foods);
         }
 
@@ -44,17 +51,34 @@ namespace FoodOracle.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<FoodItem>> AddFood([FromBody] FoodItem item)
+        public async Task<ActionResult<FoodItem>> AddFood([FromBody] FoodItemDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var createdItem = await _foodService.AddFoodAsync(item);
+            var customerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(customerId, out int parsedCustomerId))
+            {
+                return Unauthorized("Invalid user ID in token.");
+            }
+
+            var foodItem = new FoodItem
+            {
+                Name = dto.Name,
+                Quantity = dto.Quantity,
+                ExpiryDate = dto.ExpiryDate,
+                CustomerId = parsedCustomerId
+            };
+
+            var createdItem = await _foodService.AddFoodAsync(foodItem);
 
             return CreatedAtAction(nameof(GetFoodById), new { id = createdItem.Id }, createdItem);
         }
+
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFood(int id)

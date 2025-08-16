@@ -1,4 +1,6 @@
 ﻿using FoodOracle.API.Data;
+using FoodOracle.API.Models;
+using FoodOracle.Dtos;
 using FoodOracle.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,26 +40,6 @@ namespace FoodOracle.Services
             await _context.SaveChangesAsync();
             return true;
         }
-
-        public string GenerateJwtToken(Customer user)
-        {
-            var claims = new[]
-            {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.Username)
-    };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-super-secret-key"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(7),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
         private string CreateToken(Customer user)
         {
             var claims = new[]
@@ -67,7 +49,7 @@ namespace FoodOracle.Services
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
@@ -78,8 +60,12 @@ namespace FoodOracle.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        public async Task<string> Login(string username, string password)
+        public async Task<bool> DoesUserExist(string username)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return user != null;
+        }
+        public async Task<LoginResponseDto> Login(string username, string password)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
@@ -90,12 +76,13 @@ namespace FoodOracle.Services
             if (!computedHash.SequenceEqual(user.PasswordHash))
                 throw new InvalidOperationException("Invalid username or password.");
 
-            return CreateToken(user);
-        }
-        public async Task<bool> DoesUserExist(string username)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            return user != null;
+            var token = CreateToken(user);
+
+            return new LoginResponseDto
+            {
+                Token = token,
+                UserId = user.Id
+            };
         }
     }
 }

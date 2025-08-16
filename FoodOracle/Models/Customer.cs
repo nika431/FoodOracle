@@ -1,6 +1,5 @@
-﻿using FoodOracle.API.Models;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using FoodOracle.API.Models;
 
 namespace FoodOracle.Models
 {
@@ -16,6 +15,6 @@ namespace FoodOracle.Models
 
         [Required]
         public byte[] PasswordSalt { get; set; }
+        public ICollection<FoodItem> FoodItems { get; set; } = new List<FoodItem>();
     }
 }
-

@@ -1,9 +1,10 @@
 ﻿using FoodOracle.API.Data;
 using FoodOracle.API.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using FoodOracle.Dtos;
 using FoodOracle.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FoodOracle.Services
 {
@@ -16,9 +17,15 @@ namespace FoodOracle.Services
             _context = context;
         }
 
-        public async Task<PagedResult<FoodItem>> GetFoodAsync(string? searchQuery, string? sortBy, int pageNumber = 1, int pageSize = 5)
+        public async Task<PagedResult<FoodItem>> GetFoodAsync(string userId, string? searchQuery, string? sortBy, int pageNumber = 1, int pageSize = 5)
         {
-            var query = _context.FoodItems.AsQueryable();
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                throw new UnauthorizedAccessException("Invalid user ID");
+            }
+
+            var query = _context.FoodItems
+                .Where(f => f.CustomerId == parsedUserId);
 
             if (!string.IsNullOrEmpty(searchQuery))
             {
@@ -79,6 +86,18 @@ namespace FoodOracle.Services
             {
                 return false;
             }
+        }
+        public async Task<string> GetCustomerIdByUsername(string username)
+        {
+            var user = await _context.Users
+                .Where(u => u.Username == username)
+                .Select(u => u.Id.ToString())
+                .FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("User not found");
+            }
+            return user;
         }
     }
 }
