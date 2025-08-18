@@ -1,4 +1,4 @@
-#FoodOracle
+    #FoodOracle
 FoodOracle is a web application that helps you track your food’s expiry dates. It can also save food by informing other users about your inventory, allowing them to take food you do not wish to use.
 
 Example: A restaurant fails to use all its food, which would otherwise go to waste. Instead, they can post it on FoodOracle, so others can claim it, reducing food waste and positively impacting the environment.
